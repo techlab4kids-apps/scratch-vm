@@ -39,7 +39,10 @@ const defaultBlockPackages = {
     scratch3_sound: require('../blocks/scratch3_sound'),
     scratch3_sensing: require('../blocks/scratch3_sensing'),
     scratch3_data: require('../blocks/scratch3_data'),
-    scratch3_procedures: require('../blocks/scratch3_procedures')
+    scratch3_procedures: require('../blocks/scratch3_procedures'),
+    scratch3_pen_ext: require('../extensions/scratch3_pen_ext'),
+    scratch3_mqtt: require('../extensions/scratch3_mqtt_client')
+
 };
 
 const defaultExtensionColors = ['#0FBD8C', '#0DA57A', '#0B8E69'];
@@ -1140,7 +1143,7 @@ class Runtime extends EventEmitter {
         }
 
         if (blockInfo.blockType === BlockType.REPORTER) {
-            if (!blockInfo.disableMonitor && context.inputList.length === 0) {
+            if ((!blockInfo.disableMonitor && context.inputList.length === 0) || blockInfo.showAsVariable) {
                 blockJSON.checkboxInFlyout = true;
             }
         } else if (blockInfo.blockType === BlockType.LOOP) {
