@@ -48,6 +48,39 @@ class ScratchMqttClientBlocks {
         return this._isClientConnected;
     }
 
+    // MQTT BROKER CONNECT GORRU
+    connect(args, util) {
+        let ctx = this;
+        this.client = mqtt.connect({
+            host: args.BROKER,
+            port: args.PORT,
+            clientID: args.CLIEND_ID,
+            protocol: args.PROTOCOL,
+            username: args.USER,
+            password: args.PASSWORD
+        });
+
+        this.client.on('connect', function () {
+            ctx._isClientConnected = true;
+            log.log("client connected with id: " + ctx.clientID)
+            ctx.client.subscribe('scratch_presence', function (err) {
+                if (!err) {
+                    ctx.client.publish('scratch_presence', ctx.clientID)
+                }
+            })
+        });
+
+        this.client.on('message', function (topic, message) {
+            // message is Buffer
+            log.log(message.toString());
+            //(ctx.mqttMessages[topic] = ctx.mqttMessages[topic] || []) = message.toString();
+            ctx.mqttMessages[topic] = message.toString();
+            // ctx.client.end()
+        });
+
+
+    }
+
     subscribe(args, util) {
         ctx = this;
         let topic = args.TOPIC;
@@ -113,7 +146,7 @@ class ScratchMqttClientBlocks {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'mqtt.connect',
-                        default: 'connetti al broker [BROKER] sulla porta [PORT] con ID [CLIEND_ID]'
+                        default: 'connetti al broker [BROKER] sulla porta [PORT] con ID [CLIEND_ID] (protocollo [PROTOCOL], user [USER], password [PASSWORD])'
                     }),
                     arguments: {
                         BROKER: {
@@ -123,6 +156,19 @@ class ScratchMqttClientBlocks {
                         PORT: {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1884
+                        },
+                        PROTOCOL: {
+                            type: ArgumentType.STRING,
+                            menu: "protocolParam",
+                            defaultValue: "wss"
+                        },
+                        USER: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ""
+                        },
+                        PASSWORD: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ""
                         },
                         CLIEND_ID: {
                             type: ArgumentType.STRING,
@@ -235,52 +281,75 @@ class ScratchMqttClientBlocks {
                     'setFont': 'Imposta il carattere',
                 }
             }
-            // ,
+            ,
 
-            // menus: {
-            //     colorParam: {
-            //         acceptReporters: true,
-            //         items: this._initColorParam()
-            //     },
-            //     fonts: {
-            //         acceptReporters: true,
-            //         items: this._supportedFonts()
-            //     },
-            //     isUpdatableOptions: {
-            //         acceptReporters: true,
-            //         items: this._initIsUpdatableOptions()
-            //     }
-            // }
+            menus: {
+                protocolParam: {
+                    acceptReporters: false,
+                    items: [
+                        {
+                        text: formatMessage({
+                            id: 'mqttClient.protocols.ws',
+                            default: 'ws',
+                        }),
+                        value: 'ws'
+                    },
+                        {
+                            text: formatMessage({
+                                id: 'mqttClient.protocols.wss',
+                                default: 'wss',
+                            }),
+                            value: 'wss'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mqttClient.protocols.mqtt',
+                                default: 'mqtt',
+                            }),
+                            value: 'mqtt'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mqttClient.protocols.mqtts',
+                                default: 'mqtts',
+                            }),
+                            value: 'mqtts'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mqttClient.protocols.tcp',
+                                default: 'tcp',
+                            }),
+                            value: 'tcp'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mqttClient.protocols.ssl',
+                                default: 'ssl',
+                            }),
+                            value: 'ssl'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mqttClient.protocols.wx',
+                                default: 'wx',
+                            }),
+                            value: 'wx'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mqttClient.protocols.wxs',
+                                default: 'wxs',
+                            }),
+                            value: 'wxs'
+                        },
+                    ]
+                }
+            }
         };
     }
 
-    connect(args, util) {
-        let ctx = this;
-        this.client = mqtt.connect({
-            host: args.BROKER,
-            port: args.PORT,
-            clientID: args.CLIEND_ID
-        });
 
-        this.client.on('connect', function () {
-            ctx._isClientConnected = true;
-            log.log("client connected with id: " + ctx.clientID)
-            ctx.client.subscribe('scratch_presence', function (err) {
-                if (!err) {
-                    ctx.client.publish('scratch_presence', ctx.clientID)
-                }
-            })
-        });
-
-        this.client.on('message', function (topic, message) {
-            // message is Buffer
-            log.log(message.toString());
-            (ctx.mqttMessages[topic] = ctx.mqttMessages[topic] || []) = message.toString();
-            // ctx.client.end()
-        });
-
-
-    }
 
 
 
