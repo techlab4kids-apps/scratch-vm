@@ -112,7 +112,7 @@ class ScratchMqttAgruminoClientBlocks {
     }
 
     agruminoCommand(args, util){
-        
+
         return "{'name': '" + Cast.toString(args.AGRUMINO_COMMAND) + "'}";
     }
 
@@ -140,7 +140,7 @@ class ScratchMqttAgruminoClientBlocks {
                         }
                     },
                     blockType: BlockType.REPORTER,
-                    showAsVariable: false
+                    showAsVariable: false,
                 },
                 {
                     opcode: 'agruminoFieldTemperature',
@@ -154,7 +154,7 @@ class ScratchMqttAgruminoClientBlocks {
                         AGRUMINO_MESSAGE: {
                             type: ArgumentType.STRING,
                             defaultValue: 'messaggio mqtt JSON'
-                        }, 
+                        },
                         FIELD: {
                             type: ArgumentType.STRING,
                             defaultValue: 'temperature'
@@ -176,7 +176,7 @@ class ScratchMqttAgruminoClientBlocks {
                         AGRUMINO_MESSAGE: {
                             type: ArgumentType.STRING,
                             defaultValue: 'messaggio mqtt JSON'
-                        }, 
+                        },
                         FIELD: {
                             type: ArgumentType.STRING,
                             defaultValue: 'illuminance'
@@ -197,7 +197,7 @@ class ScratchMqttAgruminoClientBlocks {
                         AGRUMINO_MESSAGE: {
                             type: ArgumentType.STRING,
                             defaultValue: 'messaggio mqtt JSON'
-                        }, 
+                        },
                         FIELD: {
                             type: ArgumentType.STRING,
                             defaultValue: 'soilMoisture'
@@ -218,7 +218,7 @@ class ScratchMqttAgruminoClientBlocks {
                         AGRUMINO_MESSAGE: {
                             type: ArgumentType.STRING,
                             defaultValue: 'messaggio mqtt JSON'
-                        }, 
+                        },
                         FIELD: {
                             type: ArgumentType.STRING,
                             defaultValue: 'batteryLevel'
@@ -239,7 +239,7 @@ class ScratchMqttAgruminoClientBlocks {
                         AGRUMINO_MESSAGE: {
                             type: ArgumentType.STRING,
                             defaultValue: 'messaggio mqtt JSON'
-                        }, 
+                        },
                         FIELD: {
                             type: ArgumentType.STRING,
                             defaultValue: 'ledStatus'

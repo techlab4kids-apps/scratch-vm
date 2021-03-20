@@ -40,7 +40,22 @@ const FontParam = {
     RIFFIC: 'Riffic',
     REPORT_1942: '\'1942 report\'',
     PURISA: 'Purisa',
-    MY_FONT: '\'My type of font\''
+    MY_FONT: '\'My type of font\'',
+    ARCADE: 'Arcade',
+    BADABOOM_BB: 'BadaBoom BB',
+    FROM_CARTOON_BLOCKS: '\'From Cartoon Blocks\'',
+    KARMA_FUTURE: '\'Karma Future\'',
+    KOMIKA_BOO: '\'Komika Boo\'',
+    KOMIKA_BUBBLES: '\'Komika Bubbles\'',
+    KOMIKA_BOOGIE: '\'Komika Boogie\'',
+    KOMIKA_BOSS: '\'Komika Boss\'',
+    KOMIKA_GLAZE: '\'Komika Glaze\'',
+    KOMIKA_PARCH: '\'Komika Parch\'',
+    KOMIKA_AXIS: '\'Komika Axis\'',
+    RIFFIC_FREE: '\'Riffic Free\'',
+    SNACKER_COMIC_PERSONAL_USE_ONLY: '\'Snacker Comic Personal Use Only\'',
+    WALTOGRAPH: 'Waltograph',
+    WALTOGRAPH_UI: '\'Waltograph UI\''
 };
 
 /**
@@ -379,6 +394,126 @@ class Scratch3NewBlocks {
                     description: 'Purisa font'
                 }),
                 value: FontParam.PURISA
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font13',
+                    default: 'Arcade',
+                    description: 'Arcade font'
+                }),
+                value: FontParam.ARCADE
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font14',
+                    default: 'BadaBoom BB',
+                    description: 'BadaBoom BB font'
+                }),
+                value: FontParam.BADABOOM_BB
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font15',
+                    default: 'From Cartoon Blocks',
+                    description: 'From Cartoon Blocks font'
+                }),
+                value: FontParam.FROM_CARTOON_BLOCKS
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font16',
+                    default: 'Karma Future',
+                    description: 'Karma Future font'
+                }),
+                value: FontParam.KARMA_FUTURE
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font17',
+                    default: 'Komika Boo',
+                    description: 'Komika Boo font'
+                }),
+                value: FontParam.KOMIKA_BOO
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font18',
+                    default: 'Komika Bubbles',
+                    description: 'Komika Bubbles font'
+                }),
+                value: FontParam.KOMIKA_BUBBLES
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font19',
+                    default: 'Komika Boogie',
+                    description: 'Komika Boogie font'
+                }),
+                value: FontParam.KOMIKA_BOOGIE
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font20',
+                    default: 'Komika Boss',
+                    description: 'Komika Boss font'
+                }),
+                value: FontParam.KOMIKA_BOSS
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font21',
+                    default: 'Komika Glaze',
+                    description: 'Komika Glaze font'
+                }),
+                value: FontParam.KOMIKA_GLAZE
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font22',
+                    default: 'Komika Parch',
+                    description: 'Komika Parch font'
+                }),
+                value: FontParam.KOMIKA_PARCH
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font22',
+                    default: 'Komika Axis',
+                    description: 'Komika Axis font'
+                }),
+                value: FontParam.KOMIKA_AXIS
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font23',
+                    default: 'Riffic Free',
+                    description: 'Riffic Free font'
+                }),
+                value: FontParam.RIFFIC_FREE
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font23',
+                    default: 'Snacker Comic Personal',
+                    description: 'Snacker Comic Personal font'
+                }),
+                value: FontParam.SNACKER_COMIC_PERSONAL_USE_ONLY
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font24',
+                    default: 'Waltograph',
+                    description: 'Waltograph font'
+                }),
+                value: FontParam.WALTOGRAPH
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.fontMenu.font25',
+                    default: 'Waltograph UI',
+                    description: 'Waltograph UI font'
+                }),
+                value: FontParam.WALTOGRAPH_UI
             }
 
 
@@ -478,7 +613,7 @@ class Scratch3NewBlocks {
                     text: formatMessage({
                         id: 'pen.write',
                         // default: 'write [TEXT] [IS_UPDATABLE]',
-                        default: 'scrivi [TEXT] [IS_UPDATABLE]',
+                        default: 'scrivi [TEXT] (è aggiornabile? [IS_UPDATABLE])',
                         // description: 'write a text'
                         description: 'Scrive un testo'
                     }),
