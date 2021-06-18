@@ -260,13 +260,13 @@ class Scratch3NewBlocks {
      */
     _initColorParam() {
         return [{
-                text: formatMessage({
-                    id: 'pen.colorMenu.color',
-                    default: 'color',
-                    description: 'label for color element in color picker for pen extension'
-                }),
-                value: ColorParam.COLOR
-            },
+            text: formatMessage({
+                id: 'pen.colorMenu.color',
+                default: 'color',
+                description: 'label for color element in color picker for pen extension'
+            }),
+            value: ColorParam.COLOR
+        },
             {
                 text: formatMessage({
                     id: 'pen.colorMenu.saturation',
@@ -297,13 +297,13 @@ class Scratch3NewBlocks {
 
     _supportedFonts() {
         return [{
-                text: formatMessage({
-                    id: 'pen.fontMenu.font1',
-                    default: 'Helvetica',
-                    description: 'Helvetica font'
-                }),
-                value: FontParam.HELVETICA
-            },
+            text: formatMessage({
+                id: 'pen.fontMenu.font1',
+                default: 'Helvetica',
+                description: 'Helvetica font'
+            }),
+            value: FontParam.HELVETICA
+        },
             {
                 text: formatMessage({
                     id: 'pen.fontMenu.font2',
@@ -517,18 +517,17 @@ class Scratch3NewBlocks {
             }
 
 
-
         ];
     }
 
     _initIsUpdatableOptions() {
         return [{
-                text: formatMessage({
-                    id: 'pen.isUpdatableMenu.true',
-                    default: 'true',
-                }),
-                value: true
-            },
+            text: formatMessage({
+                id: 'pen.isUpdatableMenu.true',
+                default: 'true',
+            }),
+            value: true
+        },
             {
                 text: formatMessage({
                     id: 'pen.isUpdatableMenu.false',
@@ -578,33 +577,124 @@ class Scratch3NewBlocks {
         log.log(text);
     }
 
+    updateStageCoordinates(args) {
+        this.runtime.renderer.updateStageCoordinates(args.xLeft, args.xRight, args.yBottom, args.yTop);
+    }
+
+    setDefaultStageSize() {
+        this.runtime.renderer.updateStageCoordinates(-240, 240, -180, 180);
+    }
+
+    setStepLenght(args) {
+        this.cell_length = args.CELL_LENGHT;
+    }
+
+    drawCellBoard(args, util) {
+        var cellSize = Cast.toNumber(args.SIZE);
+        var stageWidth = this.runtime.renderer.getStageSize()[0];
+        var stageHeight = this.runtime.renderer.getStageSize()[1];
+
+        var vertLineCount = stageWidth / cellSize;
+        var orizLineCount = stageHeight / cellSize;
+
+        const penSkinId = this._getPenLayerID()
+        const target = util.target;
+        const penState = this._getPenState(target);
+
+        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 1, 0, cellSize * 1, stageHeight);
+        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 2, 0, cellSize * 2, stageHeight);
+        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 3, 0, cellSize * 3, stageHeight);
+        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 4, 0, cellSize * 4, stageHeight);
+        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 5, 0, cellSize * 5, stageHeight);
+        this.runtime.requestRedraw();
+
+
+//         for (var i = 1; i <= vertLineCount; ++i) {
+//             // this.penUp(args, util)
+//             // util.target.setXY(cellSize * i, 0)
+//             // this.penDown(args, util)
+//             // util.target.setXY(cellSize * i, stageHeight)
+//             this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * i, 0, cellSize * i, stageHeight);
+//             this.runtime.requestRedraw();
+//         }
+//         for (var i = 1; i <= orizLineCount; ++i) {
+//             // this.penUp(args, util)
+//             // util.target.setXY( 0, cellSize * i)
+//             // this.penDown(args, util)
+//             // util.target.setXY(stageWidth, cellSize * i)
+//             this.runtime.renderer.penLine(penSkinId, penState.penAttributes, 0, cellSize * i, stageWidth, cellSize * i);
+//             this.runtime.requestRedraw();
+//         }
+    }
+
     /**
      * @returns {object} metadata for this extension and its blocks.
      */
     getInfo() {
         return {
             id: 'newblocks',
-            name: 'Pen Extended',
+            name: 'Super Penna!',
             blockIconURI: blockIconURI,
             blocks: [{
-                    opcode: 'writeLog',
+                opcode: 'writeLog',
+                blockType: BlockType.COMMAND,
+                text: 'log [TEXT]',
+                arguments: {
+                    TEXT: {
+                        type: ArgumentType.STRING,
+                        defaultValue: "Ciao!"
+                    }
+                },
+                hideFromPalette: true
+            },
+                {
+                    opcode: 'updateStageCoordinates',
                     blockType: BlockType.COMMAND,
-                    text: 'log [TEXT]',
+                    text: formatMessage({
+                        id: 'pen.updateStageSize',
+                        default: 'stage (X sinistra: [xLeft], X destra [xRight], Y basso: [yBottom], Y alto [yTop])',
+                        description: 'cambia le coordinate dello stage'
+                    }),
                     arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "hello"
+                        xLeft: {
+                            id: "pen.write.x_sx",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        xRight: {
+                            id: "pen.write.x_dx",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1024
+                        },
+
+                        yBottom: {
+                            id: "pen.write.y_down",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        yTop: {
+                            id: "pen.write.y_top",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 768
                         }
-                    },
-                    hideFromPalette: true
+                    }
+                },
+                {
+                    opcode: 'setDefaultStageSize',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setDefaultStageSize',
+                        default: 'imposta coordinate stage default',
+                        description: 'imposta le coordinate di default dello stage Scratch'
+                    })
                 },
                 {
                     opcode: 'clear',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.clear',
-                        default: 'erase all',
-                        description: 'erase all pen trails and stamps'
+                        default: 'ripulisci lo stage',
+                        description: 'cancella trutti i tratti di penna e le stampe'
                     })
                 },
                 {
@@ -621,7 +711,7 @@ class Scratch3NewBlocks {
                         TEXT: {
                             id: "pen.write.default",
                             type: ArgumentType.STRING,
-                            defaultValue: 'hello!'
+                            defaultValue: 'Ciao!'
                         },
                         IS_UPDATABLE: {
                             type: ArgumentType.STRING,
@@ -874,6 +964,79 @@ class Scratch3NewBlocks {
                         }
                     },
                     hideFromPalette: true
+                },
+                {
+                    // filter: ['sprite', 'stage'],
+                    filter: ['sprite'],
+                    opcode: 'updateStageCoordinates',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.updateStageSize',
+                        default: 'stage (X sinistra: [xLeft], X destra [xRight], Y basso: [yBottom], Y alto [yTop])',
+                        description: 'cambia le coordinate dello stage'
+                    }),
+                    arguments: {
+                        xLeft: {
+                            id: "pen.write.x_sx",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        xRight: {
+                            id: "pen.write.x_dx",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 480
+                        },
+
+                        yBottom: {
+                            id: "pen.write.y_down",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        yTop: {
+                            id: "pen.write.y_top",
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 360
+                        }
+                    }
+                },
+                {
+                    filter: ['sprite'],
+                    opcode: 'setDefaultStageSize',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setDefaultStageSize',
+                        default: 'imposta coordinate stage default',
+                        description: 'imposta le coordinate di default dello stage Scratch'
+                    })
+                },
+
+                {
+                    filter: ['sprite'],
+                    opcode: 'setStepLenght',
+                    blockType: BlockType.COMMAND,
+                    text: 'imposta la lunghezza della cella a [CELL_LENGHT]',
+                    arguments: {
+                        CELL_LENGHT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 10
+                        }
+                    }
+                },
+                {
+                    opcode: 'drawCellBoard',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.drawCellBoard',
+                        default: 'disegna una griglia di lato [SIZE]',
+                        description: ''
+                    }),
+                    arguments: {
+                        SIZE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 100
+                        }
+                    },
+                    hideFromPalette: false
                 }
             ],
 
@@ -948,7 +1111,7 @@ class Scratch3NewBlocks {
             let text = args.TEXT + "";
             if (text && text.length > 0) {
                 let color = penState.penAttributes.color4f;
-                let colorHex = `rgba(${color[0] *255}, ${color[1]*255}, ${color[2]*255}, ${color[3]*255})` + "";
+                let colorHex = `rgba(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255}, ${color[3] * 255})` + "";
 
                 if ((args.IS_UPDATABLE && args.IS_UPDATABLE == 'true') || args.IS_UPDATABLE == true) {
                     if (penState.drawableTextId && this.runtime.renderer.getDrawable(penState.drawableTextId)) {
