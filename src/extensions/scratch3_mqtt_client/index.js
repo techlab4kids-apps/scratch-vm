@@ -52,9 +52,9 @@ class ScratchMqttClientBlocks {
     connect(args, util) {
         let ctx = this;
         this.client = mqtt.connect({
-            host: args.BROKER,
+            hostname: args.BROKER,
             port: args.PORT,
-            clientID: args.CLIEND_ID,
+            clientId: args.CLIEND_ID,
             protocol: args.PROTOCOL,
             username: args.USER,
             password: args.PASSWORD

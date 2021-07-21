@@ -96,6 +96,21 @@ class Scratch3NewBlocks {
 
         runtime.on('targetWasCreated', this._onTargetCreated);
         runtime.on('RUNTIME_DISPOSED', this.clear.bind(this));
+
+        let fonts = ["1942",            "Arcade","Autumn in November","BADABB__",   "From Cartoon Blocks","GenAI102","KOMIKABB",        "KOMIKABG",     "KOMIKABS",     "KOMIKAB_",     "KOMIKAGL",     "KOMIKAP_",     "KOMIKAX_",     "KarmaFuture",  "Open 24 Display St","Purisa","RifficFree-Bold","Segment16C Bold",  "SnackerComic_PerosnalUseOnly",     "mytype",           "waltographUI"]
+        let fontsName = ["1942 report", "Arcade","Autumn in November","BadaBoom BB","From Cartoon Blocks","Gentium", "Komika Bubbles",  "Komika Boogie","Komika Boss",  "Komika Boo",   "Komika Glaze", "Komika Parch", "Komika Axis",  "Karma Future", "Open 24 Display St","Purisa","Riffic Free",    "Segment16C",       "Snacker Comic Personal Use Only",  "My type of font",  "Waltograph UI"]
+        for (let i = 0; i <fonts.length; ++i){
+            let fontName = fonts[i].replaceAll(" ", "\\ ");
+            console.log('font: ' + fontName)
+            let font = new FontFace(fontsName[i], 'url(static/assets/' + fontName + '.ttf)');
+
+            font.load().then(function(font) {
+
+                // Ready to use the font in a canvas context
+                console.log('font: '+ fontsName[i] + ' ready');
+                document.fonts.add(font);
+            });
+        }
     }
 
     /**
@@ -537,6 +552,23 @@ class Scratch3NewBlocks {
             }
         ];
     }
+    _initYesNoResponseOptions() {
+        return [{
+            text: formatMessage({
+                id: 'pen.yesNoResponseMenu.true',
+                default: 'si',
+            }),
+            value: true
+        },
+            {
+                text: formatMessage({
+                    id: 'pen.yesNoResponseMenu.false',
+                    default: 'no',
+                }),
+                value: false
+            }
+        ];
+    }
 
     /**
      * Clamp a pen color parameter to the range (0,100).
@@ -577,54 +609,138 @@ class Scratch3NewBlocks {
         log.log(text);
     }
 
-    updateStageCoordinates(args) {
-        this.runtime.renderer.updateStageCoordinates(args.xLeft, args.xRight, args.yBottom, args.yTop);
+    setStageCoordinates(args) {
+        this.runtime.renderer.destroySkin(this._getPenLayerID());
+        this._penSkinId = -1;
+        this.runtime.renderer.updateStageCoordinates(parseInt(args.xLeft), parseInt(args.xRight), parseInt(args.yBottom), parseInt(args.yTop));
+        this.runtime.stageCoordinates = {xLeft: parseInt(args.xLeft), xRight: parseInt(args.xRight), yBottom: parseInt(args.yBottom), yTop: parseInt(args.yTop)}
+        this._getPenLayerID();
     }
 
     setDefaultStageSize() {
+        this.runtime.renderer.destroySkin(this._getPenLayerID());
+        this._penSkinId = -1;
         this.runtime.renderer.updateStageCoordinates(-240, 240, -180, 180);
+        this.runtime.stageCoordinates = {xLeft: -240, xRight: 240, yBottom: -180, yTop: 180}
+        this._getPenLayerID();
     }
 
-    setStepLenght(args) {
+    setCellSize(args) {
         this.cell_length = args.CELL_LENGHT;
     }
 
-    drawCellBoard(args, util) {
-        var cellSize = Cast.toNumber(args.SIZE);
-        var stageWidth = this.runtime.renderer.getStageSize()[0];
-        var stageHeight = this.runtime.renderer.getStageSize()[1];
+    gotoScreenCenter(args, util){
+        let stageWidth = this.runtime.renderer.getStageSize()[0];
+        let stageHeight = this.runtime.renderer.getStageSize()[1];
+        util.target.setXY(stageWidth/2, stageHeight/2);
+    }
 
-        var vertLineCount = stageWidth / cellSize;
-        var orizLineCount = stageHeight / cellSize;
+    drawCellBoard(args, util) {
+        let cellSize = Cast.toNumber(args.SIZE);
+        let stageWidth = this.runtime.renderer.getStageSize()[0];
+        let stageHeight = this.runtime.renderer.getStageSize()[1];
+
+        let vertLineCount = stageWidth / cellSize;
+        let orizLineCount = stageHeight / cellSize;
 
         const penSkinId = this._getPenLayerID()
         const target = util.target;
         const penState = this._getPenState(target);
 
-        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 1, 0, cellSize * 1, stageHeight);
-        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 2, 0, cellSize * 2, stageHeight);
-        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 3, 0, cellSize * 3, stageHeight);
-        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 4, 0, cellSize * 4, stageHeight);
-        this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * 5, 0, cellSize * 5, stageHeight);
-        this.runtime.requestRedraw();
+        for (let i = 0; i <= vertLineCount +1; ++i) {
+            this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * i, 0, cellSize * i, stageHeight);
+        }
+
+        for (let j = 0; j <= orizLineCount +1; ++j) {
+            this.runtime.renderer.penLine(penSkinId, penState.penAttributes, 0, cellSize * j, stageWidth, cellSize * j);
+        }
+    }
+
+    getCurrentCellSize(args, util){
+        return this.cellSize || -1;
+    }
+
+    drawChessBoard(args, util) {
+
+        // BACKGROUND_COLOR
+        // LINE_COLOR
+        // SQUARE_COLOR
+
+        let stageWidth = this.runtime.renderer.getStageSize()[0];
+        let stageHeight = this.runtime.renderer.getStageSize()[1];
+
+        let minSize = Math.min(stageWidth, stageHeight);
+
+        this.cellSize = Math.ceil(minSize/8);
+
+        let lineCount = minSize / this.cellSize;
+
+        const penSkinId = this._getPenLayerID()
+        const target = util.target;
+        const penState = this._getPenState(target);
+
+        let backgroundColor = Cast.toRgbColorList(args.BACKGROUND_COLOR);
+        let backgroundColor4f = []
+        backgroundColor4f[0] = backgroundColor[0]/255.0;
+        backgroundColor4f[1] = backgroundColor[1]/255.0;
+        backgroundColor4f[2] = backgroundColor[2]/255.0;
+        this.runtime.renderer.setBackgroundColor(backgroundColor4f[0], backgroundColor4f[1], backgroundColor4f[2])
+
+        let squareColor = Cast.toRgbColorList(args.SQUARE_COLOR);
+        let squareColor4f = []
+        squareColor4f[0] = squareColor[0]/255.0;
+        squareColor4f[1] = squareColor[1]/255.0;
+        squareColor4f[2] = squareColor[2]/255.0;
+        squareColor4f[3] = 1;
+        let squarePenAttributes = {
+            color4f: squareColor4f,
+            diameter: this.cellSize
+        };
+
+        let backgroundPenAttributes = {
+            color4f: backgroundColor4f,
+            diameter: 1
+        };
+
+        let cellHalfSize = this.cellSize/2;
+        let flag = false;
+        for (let i = 0; i < lineCount; ++i) {
+            flag = !flag;
+            for (let j = 0; j < lineCount; ++j) {
+                if(flag){
+                    this.runtime.renderer.penPoint(penSkinId, squarePenAttributes, cellHalfSize + this.cellSize * i, cellHalfSize + this.cellSize * j);
+                }else{
+                    this.runtime.renderer.penPoint(penSkinId, backgroundPenAttributes, cellHalfSize + this.cellSize * i, cellHalfSize + this.cellSize * j);
+                }
+                flag = !flag;
+            }
+        }
+
+        let lineColor = Cast.toRgbColorList(args.LINE_COLOR);
+        let lineColor4f = []
+        lineColor4f[0] = lineColor[0]/255.0;
+        lineColor4f[1] = lineColor[1]/255.0;
+        lineColor4f[2] = lineColor[2]/255.0;
+        lineColor4f[3] = 1;
+        let linePenAttributes = {
+            color4f: lineColor4f,
+            diameter: 5
+        };
+
+        for (let i = 0; i <= lineCount; ++i) {
+            this.runtime.renderer.penLine(penSkinId, linePenAttributes, this.cellSize * i, 0, this.cellSize * i, this.cellSize * lineCount);
+        }
+
+        for (let j = 0; j <= lineCount; ++j) {
+            this.runtime.renderer.penLine(penSkinId, linePenAttributes, 0, this.cellSize * j, this.cellSize * lineCount, this.cellSize * j);
+        }
 
 
-//         for (var i = 1; i <= vertLineCount; ++i) {
-//             // this.penUp(args, util)
-//             // util.target.setXY(cellSize * i, 0)
-//             // this.penDown(args, util)
-//             // util.target.setXY(cellSize * i, stageHeight)
-//             this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * i, 0, cellSize * i, stageHeight);
-//             this.runtime.requestRedraw();
-//         }
-//         for (var i = 1; i <= orizLineCount; ++i) {
-//             // this.penUp(args, util)
-//             // util.target.setXY( 0, cellSize * i)
-//             // this.penDown(args, util)
-//             // util.target.setXY(stageWidth, cellSize * i)
-//             this.runtime.renderer.penLine(penSkinId, penState.penAttributes, 0, cellSize * i, stageWidth, cellSize * i);
-//             this.runtime.requestRedraw();
-//         }
+    }
+
+    setAreSpritesFenced(args, util){
+        let spritesCanExitFromThestage = !args.spritesCanExitFromTheStage
+        util.target.setSpritesAreFenced(spritesCanExitFromThestage);
     }
 
     /**
@@ -632,7 +748,7 @@ class Scratch3NewBlocks {
      */
     getInfo() {
         return {
-            id: 'newblocks',
+            id: 'tl4kSuperPen',
             name: 'Super Penna!',
             blockIconURI: blockIconURI,
             blocks: [{
@@ -648,47 +764,6 @@ class Scratch3NewBlocks {
                 hideFromPalette: true
             },
                 {
-                    opcode: 'updateStageCoordinates',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.updateStageSize',
-                        default: 'stage (X sinistra: [xLeft], X destra [xRight], Y basso: [yBottom], Y alto [yTop])',
-                        description: 'cambia le coordinate dello stage'
-                    }),
-                    arguments: {
-                        xLeft: {
-                            id: "pen.write.x_sx",
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
-                        },
-                        xRight: {
-                            id: "pen.write.x_dx",
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1024
-                        },
-
-                        yBottom: {
-                            id: "pen.write.y_down",
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
-                        },
-                        yTop: {
-                            id: "pen.write.y_top",
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 768
-                        }
-                    }
-                },
-                {
-                    opcode: 'setDefaultStageSize',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setDefaultStageSize',
-                        default: 'imposta coordinate stage default',
-                        description: 'imposta le coordinate di default dello stage Scratch'
-                    })
-                },
-                {
                     opcode: 'clear',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -696,6 +771,12 @@ class Scratch3NewBlocks {
                         default: 'ripulisci lo stage',
                         description: 'cancella trutti i tratti di penna e le stampe'
                     })
+                },
+                {
+                    filter: ['sprite'],
+                    opcode: 'gotoScreenCenter',
+                    blockType: BlockType.COMMAND,
+                    text: 'vai al centro dello schermo'
                 },
                 {
                     opcode: 'writeText',
@@ -967,8 +1048,47 @@ class Scratch3NewBlocks {
                 },
                 {
                     // filter: ['sprite', 'stage'],
-                    filter: ['sprite'],
-                    opcode: 'updateStageCoordinates',
+                    filter: ['stage'],
+                    opcode: 'setAreSpritesFencedByBoleean',
+                    func: 'setAreSpritesFenced',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setAreSpritesFenced',
+                        default: 'gli sprite possono uscire dallo stage ? [spritesCanExitFromTheStage]',
+                        description: 'definisce se gli sprites possono uscire completamente dallo stage'
+                    }),
+                    arguments: {
+                        spritesCanExitFromTheStage: {
+                            id: "pen.write.gliSpritePossonoUscireDalloStage",
+                            type: ArgumentType.BOOLEAN,
+                            defaultValue: false
+                        }
+                    }
+                },
+                {
+                    // filter: ['sprite', 'stage'],
+                    filter: ['stage'],
+                    opcode: 'setAreSpritesFencedByMenu',
+                    func: 'setAreSpritesFenced',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setAreSpritesFenced',
+                        default: 'gli sprite possono uscire dallo stage ? [spritesCanExitFromTheStage]',
+                        description: 'definisce se gli sprites possono uscire completamente dallo stage'
+                    }),
+                    arguments: {
+                        spritesCanExitFromTheStage: {
+                            id: "pen.write.gliSpritePossonoUscireDalloStage",
+                            type: ArgumentType.STRING,
+                            menu: 'yesNoResponse',
+                            defaultValue: 'si'
+                        }
+                    }
+                },
+                {
+                    // filter: ['sprite', 'stage'],
+                    filter: ['stage'],
+                    opcode: 'setStageCoordinates',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.updateStageSize',
@@ -1000,7 +1120,7 @@ class Scratch3NewBlocks {
                     }
                 },
                 {
-                    filter: ['sprite'],
+                    filter: ['stage'],
                     opcode: 'setDefaultStageSize',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -1011,8 +1131,8 @@ class Scratch3NewBlocks {
                 },
 
                 {
-                    filter: ['sprite'],
-                    opcode: 'setStepLenght',
+                    filter: ['stage'],
+                    opcode: 'setCellSize',
                     blockType: BlockType.COMMAND,
                     text: 'imposta la lunghezza della cella a [CELL_LENGHT]',
                     arguments: {
@@ -1023,6 +1143,7 @@ class Scratch3NewBlocks {
                     }
                 },
                 {
+                    filter: ['stage'],
                     opcode: 'drawCellBoard',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -1037,7 +1158,42 @@ class Scratch3NewBlocks {
                         }
                     },
                     hideFromPalette: false
+                },
+                {
+                    filter: ['stage'],
+                    opcode: 'drawChessBoard',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.drawChessBoard',
+                        default: 'disegna scacchiera: colore fondo [BACKGROUND_COLOR], colore linee [LINE_COLOR], colore caselle [SQUARE_COLOR]',
+                        description: ''
+                    }),
+                    arguments: {
+                        BACKGROUND_COLOR: {
+                            type: ArgumentType.COLOR
+                        },
+                        LINE_COLOR: {
+                            type: ArgumentType.COLOR
+                        },
+                        SQUARE_COLOR: {
+                            type: ArgumentType.COLOR
+                        },
+                    },
+                    hideFromPalette: false
+                },
+                {
+                    // filter: ['stage'],
+                    opcode: 'getCurrentCellSize',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'pen.getCurrentCellSize',
+                        default: 'la dimensione attuale della cella',
+                        description: 'la dimensione della cella della griglia o scacchiera'
+                    }),
+                    showAsVariable: true,
+                    hideFromPalette: false
                 }
+
             ],
 
             translation_map: {
@@ -1062,7 +1218,12 @@ class Scratch3NewBlocks {
                 isUpdatableOptions: {
                     acceptReporters: true,
                     items: this._initIsUpdatableOptions()
+                },
+                yesNoResponse: {
+                    acceptReporters: true,
+                    items: this._initYesNoResponseOptions()
                 }
+
             }
         };
     }
@@ -1102,7 +1263,7 @@ class Scratch3NewBlocks {
         const penSkinId = this._getPenLayerID();
         if (penSkinId >= 0) {
             const target = util.target;
-            var position = [target.x, target.y];
+            let position = [target.x, target.y];
 
             const penState = this._getPenState(target);
             let textId;

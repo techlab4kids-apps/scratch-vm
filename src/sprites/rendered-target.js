@@ -161,6 +161,13 @@ class RenderedTarget extends Target {
          * @type {string}
          */
         this.textToSpeechLanguage = null;
+
+        /**
+         * GORRU
+         * The sprite is confined to the stage visible area
+         * @type {string}
+         */
+        this.spritesAreFenced = true;
     }
 
     /**
@@ -257,6 +264,12 @@ class RenderedTarget extends Target {
         };
     }
 
+    //GORRU
+
+    setSpritesAreFenced(areSpritesFenced){
+        this.renderer.spritesAreFenced = areSpritesFenced;
+    }
+
     /**
      * Set the X and Y coordinates.
      * @param {!number} x New X coordinate, in Scratch coordinates.
@@ -269,9 +282,18 @@ class RenderedTarget extends Target {
         const oldX = this.x;
         const oldY = this.y;
         if (this.renderer) {
-            const position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
-            this.x = position[0];
-            this.y = position[1];
+            let position;
+
+            if (this.renderer.spritesAreFenced) {
+                position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
+                this.x = position[0];
+                this.y = position[1];
+            }
+            else{
+                this.x = x;
+                this.y = y;
+                position =[this.x, this.y]
+            }
 
             this.renderer.updateDrawablePosition(this.drawableID, position);
             if (this.visible) {
