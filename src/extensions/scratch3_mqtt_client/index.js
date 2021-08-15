@@ -37,6 +37,10 @@ class ScratchMqttClientBlocks {
         this.clientID = this._uuidv4();
         this._isClientConnected = false;
         this.mqttMessages = new Array;
+
+        this._onStopRequested = this._onStopRequested.bind(this);
+
+        runtime.on('PROJECT_STOP_ALL', this._onStopRequested);
     }
 
     writeLog(args) {
@@ -61,6 +65,7 @@ class ScratchMqttClientBlocks {
         });
 
         this.client.on('connect', function () {
+            util.mqttClient = ctx;
             ctx._isClientConnected = true;
             log.log("client connected with id: " + ctx.clientID)
             ctx.client.subscribe('scratch_presence', function (err) {
@@ -71,22 +76,49 @@ class ScratchMqttClientBlocks {
         });
 
         this.client.on('message', function (topic, message) {
-            // message is Buffer
             log.log(message.toString());
-            //(ctx.mqttMessages[topic] = ctx.mqttMessages[topic] || []) = message.toString();
             ctx.mqttMessages[topic] = message.toString();
-            // ctx.client.end()
+            ctx.messageReceived = true;
         });
 
 
     }
 
+    onMessageReceived(args){
+        let rtn = this.messageReceived && (!this.lastHat);
+        // if(args.TOPIC){
+        //     rtn = rtn &&
+        // }
+        this.messageReceived = false;
+        this.lastHat = rtn;
+        if(rtn) {
+            log.log("mqtt message received: " + rtn);
+        }
+        return rtn;
+    }
+
+    _onTargetCreated(){
+        // this.mqtt
+    }
+
+    _onStopRequested(){
+        this.disconnect()
+    }
+
+    disconnect (args, util){
+        if(this.client){
+            this.client.end(true);
+            this.client = undefined;
+        }
+    }
+
     subscribe(args, util) {
-        ctx = this;
+        let ctx = this;
         let topic = args.TOPIC;
         this.client.subscribe(args.TOPIC, function (err) {
             if (!err) {
-                ctx.client.publish('scratch_presence', "subscribed " + ctx.clientID + " to topic: " + topic)
+                ctx.client.publish('scratch_presence', "subscribed " + ctx.clientID + " to topic: " + topic);
+                ctx.mqttMessages[topic] = "no message";
             }
         })
     }
@@ -95,7 +127,8 @@ class ScratchMqttClientBlocks {
         let topic = args.TOPIC;
         let message = args.MESSAGE
 
-        this.client.publish(topic, message)    }
+        this.client.publish(topic, message)
+    }
 
     getMessage(args, util) {
         let message = this.mqttMessages[args.TOPIC];
@@ -106,18 +139,28 @@ class ScratchMqttClientBlocks {
         }
     }
 
-    getFieldFormJson(args, util){
-        let object = {};
-        try {
-            object = JSON.parse(args.MESSAGE);
-        } catch(e) {
-            log.log("error parsing json (is a json source?)"); // error in the above string (in this case, yes)!
-        }
+    getFieldFromJson(args, util){
+        if (args.MESSAGE != "no message" || args.MESSAGE.search("{") == 1){
+            let object = {};
+            if(typeof args.MESSAGE === "object"){
+                object = args.MESSAGE;
+            }
+            else {
+                try {
+                    object = JSON.parse(args.MESSAGE);
+                } catch (e) {
+                    log.log("error parsing json (is a json source?)"); // error in the above string (in this case, yes)!
+                }
+            }
 
-        let field = args.FIELD;
-        if(object.hasOwnProperty(field)){
-            let fieldValue = object[field];
-            return fieldValue;
+            let field = args.FIELD;
+            if (object.hasOwnProperty(field)) {
+                let fieldValue = object[field];;
+                if(typeof object[field] === "object"){
+                    fieldValue = JSON.stringify(fieldValue);
+                }
+                return fieldValue;
+            }
         }
         return '';
     }
@@ -142,6 +185,7 @@ class ScratchMqttClientBlocks {
                     }
                 },
                 {
+                    filter: ['stage'],
                     opcode: 'connect',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -178,20 +222,16 @@ class ScratchMqttClientBlocks {
                     }
                 },
                 {
+                    filter: ['stage'],
                     opcode: 'disconnect',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'mqtt.disconnect',
-                        default: 'disconnette dal broker [BROKER]'
-                    }),
-                    arguments: {
-                        BROKER: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "localhost"
-                        }
-                    }
+                        default: 'disconnette il client dal broker'
+                    })
                 },
                 {
+                    filter: ['sprite', 'stage'],
                     opcode: 'subscribe',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -206,6 +246,38 @@ class ScratchMqttClientBlocks {
                     }
                 },
                 {
+                    filter: ['sprite', 'stage'],
+                    opcode: 'onMessageReceived',
+                    blockType: BlockType.HAT,
+                    text: formatMessage({
+                        id: 'mqtt.onMessageReceived',
+                        default: 'quando ricevo un messaggio MQTT'
+                    }),
+                    arguments: {
+                        TOPIC: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ""
+                        }
+                    }
+                },
+                // {
+                //     filter: ['sprite', 'stage'],
+                //     opcode: 'onMessageReceivedOnTopic',
+                //     func: 'onMessageReceived',
+                //     blockType: BlockType.HAT,
+                //     text: formatMessage({
+                //         id: 'mqtt.onMessageReceived',
+                //         default: 'quando ricevo un messaggio MQTT sul topic [TOPIC]'
+                //     }),
+                //     arguments: {
+                //         TOPIC: {
+                //             type: ArgumentType.STRING,
+                //             defaultValue: ""
+                //         }
+                //     }
+                // },
+                {
+                    filter: ['sprite', 'stage'],
                     opcode: 'publish',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -224,6 +296,7 @@ class ScratchMqttClientBlocks {
                     }
                 },
                 {
+                    filter: ['sprite', 'stage'],
                     opcode: 'isClientConnected',
                     text: formatMessage({
                         id: 'mqtt.isClientConnected',
@@ -234,6 +307,7 @@ class ScratchMqttClientBlocks {
                     showAsVariable: true
                 },
                 {
+                    filter: ['sprite', 'stage'],
                     opcode: 'getMessage',
                     text: formatMessage({
                         id: 'mqtt.messageArrived',
@@ -250,9 +324,10 @@ class ScratchMqttClientBlocks {
                     showAsVariable: true
                 },
                 {
-                    opcode: 'getFieldFormJson',
+                    filter: ['sprite', 'stage'],
+                    opcode: 'getFieldFromJson',
                     text: formatMessage({
-                        id: 'mqtt.getFieldFormJson',
+                        id: 'mqtt.getFieldFromJson',
                         default: "valore del campo [FIELD] del messaggio json [MESSAGE]",
                         description: 'estrae il valore del campo dal messaggio'
                     }),

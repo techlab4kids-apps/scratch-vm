@@ -34,6 +34,29 @@ class ScratchTechLAB4KidsBlocks {
         return false;
     }
 
+    takePicture(args, util){
+        import { Camera, CameraResultType } from '@capacitor/camera';
+
+        const takePicture = async () => {
+            const image = await Camera.getPhoto({
+                quality: 90,
+                allowEditing: false,
+                resultType: CameraResultType.Uri,
+                source: CameraSource.CAMERA,
+                direction: CameraDirection.REAR
+            });
+
+            // image.webPath will contain a path that can be set as an image src.
+            // You can access the original file using image.path, which can be
+            // passed to the Filesystem API to read the raw data of the image,
+            // if desired (or pass resultType: CameraResultType.Base64 to getPhoto)
+            var imageUrl = image.webPath;
+
+            // Can be set to the src of an image now
+            imageElement.src = imageUrl;
+        };
+    }
+
     /**
      * @returns {object} metadata for this extension and its blocks.
      */
@@ -43,6 +66,23 @@ class ScratchTechLAB4KidsBlocks {
             name: 'TechLAB 4 Kids Blocks',
             blockIconURI: blockIconURI,
             blocks: [
+                {
+                    opcode: 'takePicture',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'TechLAB4KidsBlocks.takePicture',
+                        default: '[PICTURE_NAME]',
+                        description: 'il nome della foto '
+                    }),
+                    arguments: {
+                        PICTURE_NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nome della foto'
+                        }
+
+                    },
+                    showAsVariable: false
+                },
                 {
                     opcode: 'concatenateWordsWithSpace',
 

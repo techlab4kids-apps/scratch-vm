@@ -100,7 +100,8 @@ class Scratch3NewBlocks {
         let fonts = ["1942",            "Arcade","Autumn in November","BADABB__",   "From Cartoon Blocks","GenAI102","KOMIKABB",        "KOMIKABG",     "KOMIKABS",     "KOMIKAB_",     "KOMIKAGL",     "KOMIKAP_",     "KOMIKAX_",     "KarmaFuture",  "Open 24 Display St","Purisa","RifficFree-Bold","Segment16C Bold",  "SnackerComic_PerosnalUseOnly",     "mytype",           "waltographUI"]
         let fontsName = ["1942 report", "Arcade","Autumn in November","BadaBoom BB","From Cartoon Blocks","Gentium", "Komika Bubbles",  "Komika Boogie","Komika Boss",  "Komika Boo",   "Komika Glaze", "Komika Parch", "Komika Axis",  "Karma Future", "Open 24 Display St","Purisa","Riffic Free",    "Segment16C",       "Snacker Comic Personal Use Only",  "My type of font",  "Waltograph UI"]
         for (let i = 0; i <fonts.length; ++i){
-            let fontName = fonts[i].replaceAll(" ", "\\ ");
+            let currentFont = fonts[i];
+            let fontName = currentFont.replace(/ /g, "\\ ");
             console.log('font: ' + fontName)
             let font = new FontFace(fontsName[i], 'url(static/assets/' + fontName + '.ttf)');
 
@@ -1270,7 +1271,7 @@ class Scratch3NewBlocks {
             let textSkinID;
 
             let text = args.TEXT + "";
-            if (text && text.length > 0) {
+            if (text) {
                 let color = penState.penAttributes.color4f;
                 let colorHex = `rgba(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255}, ${color[3] * 255})` + "";
 
