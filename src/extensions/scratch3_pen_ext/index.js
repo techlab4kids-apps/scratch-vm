@@ -614,7 +614,7 @@ class Scratch3NewBlocks {
         this.runtime.renderer.destroySkin(this._getPenLayerID());
         this._penSkinId = -1;
         this.runtime.renderer.updateStageCoordinates(parseInt(args.xLeft), parseInt(args.xRight), parseInt(args.yBottom), parseInt(args.yTop));
-        this.runtime.stageCoordinates = {xLeft: parseInt(args.xLeft), xRight: parseInt(args.xRight), yBottom: parseInt(args.yBottom), yTop: parseInt(args.yTop)}
+        this.runtime.renderer.stageCoordinates = {xLeft: parseInt(args.xLeft), xRight: parseInt(args.xRight), yBottom: parseInt(args.yBottom), yTop: parseInt(args.yTop)}
         this._getPenLayerID();
     }
 
@@ -622,12 +622,12 @@ class Scratch3NewBlocks {
         this.runtime.renderer.destroySkin(this._getPenLayerID());
         this._penSkinId = -1;
         this.runtime.renderer.updateStageCoordinates(-240, 240, -180, 180);
-        this.runtime.stageCoordinates = {xLeft: -240, xRight: 240, yBottom: -180, yTop: 180}
+        this.runtime.renderer.stageCoordinates = {xLeft: -240, xRight: 240, yBottom: -180, yTop: 180}
         this._getPenLayerID();
     }
 
     setCellSize(args) {
-        this.cell_length = args.CELL_LENGHT;
+        this.cell_length = Cast.toNumber(args.CELL_LENGHT);
     }
 
     gotoScreenCenter(args, util){
@@ -638,8 +638,14 @@ class Scratch3NewBlocks {
 
     drawCellBoard(args, util) {
         let cellSize = Cast.toNumber(args.SIZE);
+
+        this.cell_length = cellSize;
+
         let stageWidth = this.runtime.renderer.getStageSize()[0];
         let stageHeight = this.runtime.renderer.getStageSize()[1];
+
+        let leftX = this.runtime.renderer._xLeft;
+        let bottomY = this.runtime.renderer._yBottom;
 
         let vertLineCount = stageWidth / cellSize;
         let orizLineCount = stageHeight / cellSize;
@@ -649,16 +655,25 @@ class Scratch3NewBlocks {
         const penState = this._getPenState(target);
 
         for (let i = 0; i <= vertLineCount +1; ++i) {
-            this.runtime.renderer.penLine(penSkinId, penState.penAttributes, cellSize * i, 0, cellSize * i, stageHeight);
+            this.runtime.renderer.penLine(penSkinId, penState.penAttributes, leftX + cellSize * i, bottomY, leftX + cellSize * i, stageHeight);
         }
 
         for (let j = 0; j <= orizLineCount +1; ++j) {
-            this.runtime.renderer.penLine(penSkinId, penState.penAttributes, 0, cellSize * j, stageWidth, cellSize * j);
+            this.runtime.renderer.penLine(penSkinId, penState.penAttributes, leftX, bottomY + cellSize * j, stageWidth, bottomY + cellSize * j);
         }
     }
 
     getCurrentCellSize(args, util){
-        return this.cellSize || -1;
+        return this.cell_length || -1;
+    }
+
+    setBackgroundColor(args, util){
+        let backgroundColor = Cast.toRgbColorList(args.BACKGROUND_COLOR);
+        let backgroundColor4f = []
+        backgroundColor4f[0] = backgroundColor[0]/255.0;
+        backgroundColor4f[1] = backgroundColor[1]/255.0;
+        backgroundColor4f[2] = backgroundColor[2]/255.0;
+        this.runtime.renderer.setBackgroundColor(backgroundColor4f[0], backgroundColor4f[1], backgroundColor4f[2])
     }
 
     drawChessBoard(args, util) {
@@ -671,8 +686,8 @@ class Scratch3NewBlocks {
         let stageHeight = this.runtime.renderer.getStageSize()[1];
 
         let minSize = Math.min(stageWidth, stageHeight);
-
-        this.cellSize = Math.ceil(minSize/8);
+        let cellCount = 8
+        this.cellSize = Math.ceil(minSize/cellCount);
 
         let lineCount = minSize / this.cellSize;
 
@@ -703,15 +718,18 @@ class Scratch3NewBlocks {
             diameter: 1
         };
 
+        let leftX = this.runtime.renderer._xLeft;
+        let bottomY = this.runtime.renderer._yBottom;
+
         let cellHalfSize = this.cellSize/2;
         let flag = false;
         for (let i = 0; i < lineCount; ++i) {
             flag = !flag;
             for (let j = 0; j < lineCount; ++j) {
                 if(flag){
-                    this.runtime.renderer.penPoint(penSkinId, squarePenAttributes, cellHalfSize + this.cellSize * i, cellHalfSize + this.cellSize * j);
+                    this.runtime.renderer.penPoint(penSkinId, squarePenAttributes, leftX + cellHalfSize + this.cellSize * i, bottomY + cellHalfSize + this.cellSize * j);
                 }else{
-                    this.runtime.renderer.penPoint(penSkinId, backgroundPenAttributes, cellHalfSize + this.cellSize * i, cellHalfSize + this.cellSize * j);
+                    this.runtime.renderer.penPoint(penSkinId, backgroundPenAttributes, leftX + cellHalfSize + this.cellSize * i, bottomY + cellHalfSize + this.cellSize * j);
                 }
                 flag = !flag;
             }
@@ -729,11 +747,11 @@ class Scratch3NewBlocks {
         };
 
         for (let i = 0; i <= lineCount; ++i) {
-            this.runtime.renderer.penLine(penSkinId, linePenAttributes, this.cellSize * i, 0, this.cellSize * i, this.cellSize * lineCount);
+            this.runtime.renderer.penLine(penSkinId, linePenAttributes, leftX + this.cellSize * i, bottomY, leftX + this.cellSize * i, bottomY + this.cellSize * cellCount);
         }
 
         for (let j = 0; j <= lineCount; ++j) {
-            this.runtime.renderer.penLine(penSkinId, linePenAttributes, 0, this.cellSize * j, this.cellSize * lineCount, this.cellSize * j);
+            this.runtime.renderer.penLine(penSkinId, linePenAttributes, leftX, bottomY + this.cellSize * j, leftX + this.cellSize * cellCount, bottomY + this.cellSize * j);
         }
 
 
@@ -1179,6 +1197,22 @@ class Scratch3NewBlocks {
                         SQUARE_COLOR: {
                             type: ArgumentType.COLOR
                         },
+                    },
+                    hideFromPalette: false
+                },
+                {
+                    filter: ['stage'],
+                    opcode: 'setBackgroundColor',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setBackgroundColor',
+                        default: 'Imposta il colore dello sfondo a  [BACKGROUND_COLOR]',
+                        description: 'la dimensione della cella della griglia o scacchiera'
+                    }),
+                    arguments: {
+                        BACKGROUND_COLOR: {
+                            type: ArgumentType.COLOR
+                        }
                     },
                     hideFromPalette: false
                 },

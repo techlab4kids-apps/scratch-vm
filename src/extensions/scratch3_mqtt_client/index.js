@@ -55,10 +55,11 @@ class ScratchMqttClientBlocks {
     // MQTT BROKER CONNECT GORRU
     connect(args, util) {
         let ctx = this;
+        ctx.clientID = args.CLIEND_ID + "_" + this._uuidv4()
         this.client = mqtt.connect({
             hostname: args.BROKER,
             port: args.PORT,
-            clientId: args.CLIEND_ID,
+            clientId: ctx.clientID,
             protocol: args.PROTOCOL,
             username: args.USER,
             password: args.PASSWORD
@@ -165,6 +166,30 @@ class ScratchMqttClientBlocks {
         return '';
     }
 
+    takePicture(args, util){
+
+        let pictureName = args.PICTURE_NAME;
+        let clientName = args.CLIENT_NAME;
+        let cameraID = args.CAMERA_ID;
+        let site = args.SITE;
+
+        let topic = `${site}/camera/${cameraID}/shutter`;
+        let message = `"fileNamePrefix":"${pictureName}", "clientName":"${clientName}"}`;
+
+        this.client.publish(topic, message)
+    }
+
+    dimScreen(args, util){
+
+        let cameraID = args.CAMERA_ID;
+        let site = args.SITE;
+
+        let topic = `${site}/camera/${cameraID}/setting/dim_screen`;
+        let message = "";
+
+        this.client.publish(topic, message)
+    }
+
     /**
      * @returns {object} metadata for this extension and its blocks.
      */
@@ -260,22 +285,6 @@ class ScratchMqttClientBlocks {
                         }
                     }
                 },
-                // {
-                //     filter: ['sprite', 'stage'],
-                //     opcode: 'onMessageReceivedOnTopic',
-                //     func: 'onMessageReceived',
-                //     blockType: BlockType.HAT,
-                //     text: formatMessage({
-                //         id: 'mqtt.onMessageReceived',
-                //         default: 'quando ricevo un messaggio MQTT sul topic [TOPIC]'
-                //     }),
-                //     arguments: {
-                //         TOPIC: {
-                //             type: ArgumentType.STRING,
-                //             defaultValue: ""
-                //         }
-                //     }
-                // },
                 {
                     filter: ['sprite', 'stage'],
                     opcode: 'publish',
@@ -343,7 +352,65 @@ class ScratchMqttClientBlocks {
                     },
                     blockType: BlockType.REPORTER,
                     showAsVariable: true
-                }
+                },
+                {
+                    opcode: 'takePicture',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'TechLAB4KidsBlocks.takePicture',
+                        default: 'scatta la foto [PICTURE_NAME] con la fotocamera nel sito [SITE] con id [CAMERA_ID] e id client [CLIENT_NAME]',
+                        description: 'questo blocco usa una fotocamera comandata da messaggi MQTT.'
+                    }),
+                    arguments: {
+                        PICTURE_NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nome della foto'
+                        },
+                        CAMERA_ID: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'identificativo della foto camera da usare'
+                        },
+
+                        CLIENT_NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nome del client (non obbligatorio)'
+                        },
+
+                        SITE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nome del sito dove si trova la foto camera'
+                        }
+
+                    },
+                    showAsVariable: false
+                },
+                {
+                    opcode: 'dimScreen',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'TechLAB4KidsBlocks.dimScreen',
+                        default: 'oscura lo schermo della fotocamera in [SITE] con id [CAMERA_ID]',
+                        description: 'questo blocco usa una fotocamera comandata da messaggi MQTT.'
+                    }),
+                    arguments: {
+                        CAMERA_ID: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'identificativo della foto camera da usare'
+                        },
+
+                        CLIENT_NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nome del client (non obbligatorio)'
+                        },
+
+                        SITE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nome del sito dove si trova la foto camera'
+                        }
+
+                    },
+                    showAsVariable: false
+                },
 
             ],
 
