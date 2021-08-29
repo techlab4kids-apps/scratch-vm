@@ -688,6 +688,7 @@ class Scratch3NewBlocks {
         let minSize = Math.min(stageWidth, stageHeight);
         let cellCount = 8
         this.cellSize = Math.ceil(minSize/cellCount);
+        this.cell_length = this.cellSize;
 
         let lineCount = minSize / this.cellSize;
 
