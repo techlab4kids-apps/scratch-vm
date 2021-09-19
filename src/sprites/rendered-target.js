@@ -17,6 +17,14 @@ class RenderedTarget extends Target {
     constructor (sprite, runtime) {
         super(runtime, sprite.blocks);
 
+        // GORRU: handle custom sprite animation during motion
+        this.animation = {
+            isMoving: false,
+            costumePrefix: "giu",
+            costumeFirstIndex: 0,
+            costumeLastIndex: 8,
+        }
+
         /**
          * Reference to the sprite that this is a render of.
          * @type {!Sprite}
