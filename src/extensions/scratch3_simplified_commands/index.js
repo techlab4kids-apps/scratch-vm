@@ -317,13 +317,27 @@ class ScratchSimplifiedCommandsBlocks {
         this.sendMqttMessages("indietro", args.N_CELLS, util)
     }
 
+    configureAnimationMotion(args, util){
+        util.target.animation.stepDuration = args.STEP_DURATION;
+    }
+
+    configureAnimationMotionCostume1(args, util){
+        util.target.animation.costumeStoppedPrefix = args.COSTUME_STOPPED_PREFIX;
+        util.target.animation.costumeFirstIndex = args.COSTUME_FIRST_INDEX;
+        util.target.animation.costumeLastIndex = args.COSTUME_LAST_INDEX;
+    }
+
+    configureAnimationMotionCostume2(args, util){
+        util.target.animation.costumePrefixDown = args.COSTUME_DOWN;
+        util.target.animation.costumePrefixUp = args.COSTUME_UP;
+        util.target.animation.costumePrefixLeft = args.COSTUME_LEFT;
+        util.target.animation.costumePrefixRight = args.COSTUME_RIGHT;
+    }
+
     gotoAnimated(direction, destination, args, util) {
         util.target.animation.isMoving = true
 
         this.sendMqttMessages(direction, args.N_CELLS, util)
-
-        let stepDuration = 0.2
-        let iterations = 4 // each cell traverse require iteration steps
 
         if (util.stackFrame.timer) {
             const timeElapsed = util.stackFrame.timer.timeElapsed();
@@ -354,16 +368,18 @@ class ScratchSimplifiedCommandsBlocks {
             }
         } else {
             // First time: save data for future use.
+            // util.target.animation.stepDuration = 0.2
 
-            util.target.animation.costumeStoppedPrefix = "giu";
+            // util.target.animation.costumeStoppedPrefix = "giu";
             util.target.animation.costumePrefix = direction;
-            util.target.animation.costumeFirstIndex = 0;
-            util.target.animation.costumeLastIndex = 8;
+            // util.target.animation.costumeFirstIndex = 0;
+            // util.target.animation.costumeLastIndex = 8;
             util.target.animation.costumeIndex = util.target.animation.costumeFirstIndex;
 
             util.stackFrame.timer = new Timer();
             util.stackFrame.timer.start();
-            util.stackFrame.duration = stepDuration * 4 * args.N_CELLS;
+            let numberOfStepsForCell = util.target.animation.costumeLastIndex - util.target.animation.costumeFirstIndex
+            util.stackFrame.duration = util.target.animation.stepDuration * numberOfStepsForCell * args.N_CELLS;
             util.stackFrame.startX = util.target.x;
             util.stackFrame.startY = util.target.y;
 
@@ -769,6 +785,62 @@ class ScratchSimplifiedCommandsBlocks {
                         N_CELLS: {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1
+                        }
+                    }
+                },
+                {
+                    filter: ['sprite'],
+                    opcode: 'configureAnimationMotionCostume1',
+                    blockType: BlockType.COMMAND,
+                    text: 'animazione costumi: prefisso fermo [COSTUME_STOPPED_PREFIX]; indice primo [COSTUME_FIRST_INDEX]; indice ultimo [COSTUME_LAST_INDEX]',
+                    arguments: {
+                        COSTUME_STOPPED_PREFIX: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "giu"
+                        },
+                        COSTUME_FIRST_INDEX: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        COSTUME_LAST_INDEX: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 7
+                        }
+                    }
+                },
+                {
+                    filter: ['sprite'],
+                    opcode: 'configureAnimationMotionCostume2',
+                    blockType: BlockType.COMMAND,
+                    text: 'animazione costumi, prefissi: giù [COSTUME_DOWN]; su [COSTUME_UP]; sinistra [COSTUME_LEFT]; destra [COSTUME_RIGHT]',
+                    arguments: {
+                        COSTUME_DOWN: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "giu"
+                        },
+                        COSTUME_UP: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "su"
+                        },
+                        COSTUME_LEFT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "sinistra"
+                        },
+                        COSTUME_RIGHT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "destra"
+                        }
+                    }
+                },
+                {
+                    filter: ['sprite'],
+                    opcode: 'configureAnimationMotion',
+                    blockType: BlockType.COMMAND,
+                    text: 'durata singolo step animazione [STEP_DURATION]',
+                    arguments: {
+                        STEP_DURATION: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.2
                         }
                     }
                 },

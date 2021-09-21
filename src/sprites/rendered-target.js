@@ -20,9 +20,14 @@ class RenderedTarget extends Target {
         // GORRU: handle custom sprite animation during motion
         this.animation = {
             isMoving: false,
-            costumePrefix: "giu",
+            costumePrefixDown: "giu",
+            costumePrefixUp: "su",
+            costumePrefixLeft: "sinistra",
+            costumePrefixRight: "destra",
+            costumeStoppedPrefix: "giu",
             costumeFirstIndex: 0,
             costumeLastIndex: 8,
+            stepDuration: 0.2
         }
 
         /**
